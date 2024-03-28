@@ -1,5 +1,8 @@
 ---
-- name: Test role for module
+- name: Test module
   hosts: localhost
-  roles:
-    - my_own_module
+  tasks:
+    - name: Call my_own_module
+      my_own_module:
+        path: "/tmp/test2.txt"
+        content: "some content"
