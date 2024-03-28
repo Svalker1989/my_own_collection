@@ -1,0 +1,6 @@
+---
+# tasks file for my_own_module
+- name: Create file
+  my_own_module:
+    path: "{{ path }}"
+    content: "{{ content }}"
