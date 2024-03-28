@@ -1,89 +1,237 @@
-[![PyPI version](https://img.shields.io/pypi/v/ansible-core.svg)](https://pypi.org/project/ansible-core)
-[![Docs badge](https://img.shields.io/badge/docs-latest-brightgreen.svg)](https://docs.ansible.com/ansible/latest/)
-[![Chat badge](https://img.shields.io/badge/chat-IRC-brightgreen.svg)](https://docs.ansible.com/ansible/latest/community/communication.html)
-[![Build Status](https://dev.azure.com/ansible/ansible/_apis/build/status/CI?branchName=devel)](https://dev.azure.com/ansible/ansible/_build/latest?definitionId=20&branchName=devel)
-[![Ansible Code of Conduct](https://img.shields.io/badge/code%20of%20conduct-Ansible-silver.svg)](https://docs.ansible.com/ansible/latest/community/code_of_conduct.html)
-[![Ansible mailing lists](https://img.shields.io/badge/mailing%20lists-Ansible-orange.svg)](https://docs.ansible.com/ansible/latest/community/communication.html#mailing-list-information)
-[![Repository License](https://img.shields.io/badge/license-GPL%20v3.0-brightgreen.svg)](COPYING)
-[![Ansible CII Best Practices certification](https://bestpractices.coreinfrastructure.org/projects/2372/badge)](https://bestpractices.coreinfrastructure.org/projects/2372)
+# Домашнее задание к занятию 6 «Создание собственных модулей»
 
-# Ansible
+## Подготовка к выполнению
 
-Ansible is a radically simple IT automation system. It handles
-configuration management, application deployment, cloud provisioning,
-ad-hoc task execution, network automation, and multi-node orchestration. Ansible makes complex
-changes like zero-downtime rolling updates with load balancers easy. More information on the Ansible [website](https://ansible.com/).
+1. Создайте пустой публичный репозиторий в своём любом проекте: `my_own_collection`.
+2. Скачайте репозиторий Ansible: `git clone https://github.com/ansible/ansible.git` по любому, удобному вам пути.
+3. Зайдите в директорию Ansible: `cd ansible`.
+4. Создайте виртуальное окружение: `python3 -m venv venv`.
+5. Активируйте виртуальное окружение: `. venv/bin/activate`. Дальнейшие действия производятся только в виртуальном окружении.
+6. Установите зависимости `pip install -r requirements.txt`.
+7. Запустите настройку окружения `. hacking/env-setup`.
+8. Если все шаги прошли успешно — выйдите из виртуального окружения `deactivate`.
+9. Ваше окружение настроено. Чтобы запустить его, нужно находиться в директории `ansible` и выполнить конструкцию `. venv/bin/activate && . hacking/env-setup`.
 
-## Design Principles
+## Основная часть
 
-* Have an extremely simple setup process with a minimal learning curve.
-* Manage machines quickly and in parallel.
-* Avoid custom-agents and additional open ports, be agentless by
-  leveraging the existing SSH daemon.
-* Describe infrastructure in a language that is both machine and human
-  friendly.
-* Focus on security and easy auditability/review/rewriting of content.
-* Manage new remote machines instantly, without bootstrapping any
-  software.
-* Allow module development in any dynamic language, not just Python.
-* Be usable as non-root.
-* Be the easiest IT automation system to use, ever.
+Ваша цель — написать собственный module, который вы можете использовать в своей role через playbook. Всё это должно быть собрано в виде collection и отправлено в ваш репозиторий.
 
-## Use Ansible
+**Шаг 1.** В виртуальном окружении создайте новый `my_own_module.py` файл.
 
-You can install a released version of Ansible with `pip` or a package manager. See our
-[installation guide](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) for details on installing Ansible
-on a variety of platforms.
+**Шаг 2.** Наполните его содержимым:
 
-Power users and developers can run the `devel` branch, which has the latest
-features and fixes, directly. Although it is reasonably stable, you are more likely to encounter
-breaking changes when running the `devel` branch. We recommend getting involved
-in the Ansible community if you want to run the `devel` branch.
+```python
+#!/usr/bin/python
 
-## Get Involved
+# Copyright: (c) 2018, Terry Jones <terry.jones@example.org>
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+from __future__ import (absolute_import, division, print_function)
+__metaclass__ = type
 
-* Read [Community Information](https://docs.ansible.com/ansible/latest/community) for all
-  kinds of ways to contribute to and interact with the project,
-  including mailing list information and how to submit bug reports and
-  code to Ansible.
-* Join a [Working Group](https://docs.ansible.com/ansible/devel/community/communication.html#working-groups),
-  an organized community devoted to a specific technology domain or platform.
-* Submit a proposed code update through a pull request to the `devel` branch.
-* Talk to us before making larger changes
-  to avoid duplicate efforts. This not only helps everyone
-  know what is going on, but it also helps save time and effort if we decide
-  some changes are needed.
-* For a list of email lists, IRC channels and Working Groups, see the
-  [Communication page](https://docs.ansible.com/ansible/devel/community/communication.html)
+DOCUMENTATION = r'''
+---
+module: my_test
 
-## Coding Guidelines
+short_description: This is my test module
 
-We document our Coding Guidelines in the [Developer Guide](https://docs.ansible.com/ansible/devel/dev_guide/). We particularly suggest you review:
+# If this is part of a collection, you need to use semantic versioning,
+# i.e. the version is of the form "2.5.0" and not "2.4".
+version_added: "1.0.0"
 
-* [Contributing your module to Ansible](https://docs.ansible.com/ansible/devel/dev_guide/developing_modules_checklist.html)
-* [Conventions, tips, and pitfalls](https://docs.ansible.com/ansible/devel/dev_guide/developing_modules_best_practices.html)
+description: This is my longer description explaining my test module.
 
-## Branch Info
+options:
+    name:
+        description: This is the message to send to the test module.
+        required: true
+        type: str
+    new:
+        description:
+            - Control to demo if the result of this module is changed or not.
+            - Parameter description can be a list as well.
+        required: false
+        type: bool
+# Specify this value according to your collection
+# in format of namespace.collection.doc_fragment_name
+extends_documentation_fragment:
+    - my_namespace.my_collection.my_doc_fragment_name
 
-* The `devel` branch corresponds to the release actively under development.
-* The `stable-2.X` branches correspond to stable releases.
-* Create a branch based on `devel` and set up a [dev environment](https://docs.ansible.com/ansible/latest/dev_guide/developing_modules_general.html#common-environment-setup) if you want to open a PR.
-* See the [Ansible release and maintenance](https://docs.ansible.com/ansible/devel/reference_appendices/release_and_maintenance.html) page for information about active branches.
+author:
+    - Your Name (@yourGitHubHandle)
+'''
 
-## Roadmap
+EXAMPLES = r'''
+# Pass in a message
+- name: Test with a message
+  my_namespace.my_collection.my_test:
+    name: hello world
 
-Based on team and community feedback, an initial roadmap will be published for a major or minor version (ex: 2.7, 2.8).
-The [Ansible Roadmap page](https://docs.ansible.com/ansible/devel/roadmap/) details what is planned and how to influence the roadmap.
+# pass in a message and have changed true
+- name: Test with a message and changed output
+  my_namespace.my_collection.my_test:
+    name: hello world
+    new: true
 
-## Authors
+# fail the module
+- name: Test failure of the module
+  my_namespace.my_collection.my_test:
+    name: fail me
+'''
 
-Ansible was created by [Michael DeHaan](https://github.com/mpdehaan)
-and has contributions from over 5000 users (and growing). Thanks everyone!
+RETURN = r'''
+# These are examples of possible return values, and in general should use other names for return values.
+original_message:
+    description: The original name param that was passed in.
+    type: str
+    returned: always
+    sample: 'hello world'
+message:
+    description: The output message that the test module generates.
+    type: str
+    returned: always
+    sample: 'goodbye'
+'''
 
-[Ansible](https://www.ansible.com) is sponsored by [Red Hat, Inc.](https://www.redhat.com)
+from ansible.module_utils.basic import AnsibleModule
 
-## License
 
-GNU General Public License v3.0 or later
+def run_module():
+    # define available arguments/parameters a user can pass to the module
+    module_args = dict(
+        name=dict(type='str', required=True),
+        new=dict(type='bool', required=False, default=False)
+    )
 
-See [COPYING](COPYING) to see the full text.
+    # seed the result dict in the object
+    # we primarily care about changed and state
+    # changed is if this module effectively modified the target
+    # state will include any data that you want your module to pass back
+    # for consumption, for example, in a subsequent task
+    result = dict(
+        changed=False,
+        original_message='',
+        message=''
+    )
+
+    # the AnsibleModule object will be our abstraction working with Ansible
+    # this includes instantiation, a couple of common attr would be the
+    # args/params passed to the execution, as well as if the module
+    # supports check mode
+    module = AnsibleModule(
+        argument_spec=module_args,
+        supports_check_mode=True
+    )
+
+    # if the user is working with this module in only check mode we do not
+    # want to make any changes to the environment, just return the current
+    # state with no modifications
+    if module.check_mode:
+        module.exit_json(**result)
+
+    # manipulate or modify the state as needed (this is going to be the
+    # part where your module will do what it needs to do)
+    result['original_message'] = module.params['name']
+    result['message'] = 'goodbye'
+
+    # use whatever logic you need to determine whether or not this module
+    # made any modifications to your target
+    if module.params['new']:
+        result['changed'] = True
+
+    # during the execution of the module, if there is an exception or a
+    # conditional state that effectively causes a failure, run
+    # AnsibleModule.fail_json() to pass in the message and the result
+    if module.params['name'] == 'fail me':
+        module.fail_json(msg='You requested this to fail', **result)
+
+    # in the event of a successful module execution, you will want to
+    # simple AnsibleModule.exit_json(), passing the key/value results
+    module.exit_json(**result)
+
+
+def main():
+    run_module()
+
+
+if __name__ == '__main__':
+    main()
+```
+Или возьмите это наполнение [из статьи](https://docs.ansible.com/ansible/latest/dev_guide/developing_modules_general.html#creating-a-module).
+
+**Шаг 3.** Заполните файл в соответствии с требованиями Ansible так, чтобы он выполнял основную задачу: module должен создавать текстовый файл на удалённом хосте по пути, определённом в параметре `path`, с содержимым, определённым в параметре `content`.
+```python
+# Аргументы
+    module_args = dict(
+        path=dict(type='str', required=True),
+        content=dict(type='str', required=False, default = "homework")
+    )
+# функции, которые создают файл с содержимым и выводят сообщение о создании файла, либо о его существовании.
+    if module.check_mode:
+        if not os.path.exists(module.params['path']):
+          result['changed'] = True
+        module.exit_json(**result)
+
+    if not os.path.exists(module.params['path']):
+        with open(module.params['path'], 'w') as f:
+            f.write(module.params['content'])
+        result['changed'] = True
+        result['original_message'] = 'File created'
+        result['message'] = 'File created'
+    else:
+        result['original_message'] = 'File is already exists'
+        result['message'] = 'File is already exists'
+
+    module.exit_json(**result)
+```
+
+**Шаг 4.** Проверьте module на исполняемость локально.
+`python -m ansible.modules.my_own_module payload.json `
+[payload.json ]()
+![1]()
+**Шаг 5.** Напишите single task playbook и используйте module в нём.
+[site.yml]()
+`sudo ansible-playbook ./site.yml`
+**Шаг 6.** Проверьте через playbook на идемпотентность.
+![3]()
+**Шаг 7.** Выйдите из виртуального окружения.
+
+**Шаг 8.** Инициализируйте новую collection: `ansible-galaxy collection init my_own_namespace.yandex_cloud_elk`.
+
+**Шаг 9.** В эту collection перенесите свой module в соответствующую директорию.
+Путь:  
+`/home/str/ansible/08-ansible-06-module/ansible/ansible/my_own_namespace/yandex_cloud_elk/plugins/modules/my_own_module.py`  
+**Шаг 10.** Single task playbook преобразуйте в single task role и перенесите в collection. У role должны быть default всех параметров module.
+
+**Шаг 11.** Создайте playbook для использования этой role.
+[site.yml]()
+**Шаг 12.** Заполните всю документацию по collection, выложите в свой репозиторий, поставьте тег `1.0.0` на этот коммит.
+
+**Шаг 13.** Создайте .tar.gz этой collection: `ansible-galaxy collection build` в корневой директории collection.
+[my_own_namespace-yandex_cloud_elk-1.0.0.tar.gz]()
+**Шаг 14.** Создайте ещё одну директорию любого наименования, перенесите туда single task playbook и архив c collection.
+`./single_task_pb/`
+**Шаг 15.** Установите collection из локального архива: `ansible-galaxy collection install <archivename>.tar.gz`.
+По умолчанию устаналивает в /home/str/.ansible/collections/ansible_collections.
+Для указания директории для установки флаг -p
+![2]()
+
+**Шаг 16.** Запустите playbook, убедитесь, что он работает.
+![4]()
+**Шаг 17.** В ответ необходимо прислать ссылки на collection и tar.gz архив, а также скриншоты выполнения пунктов 4, 6, 15 и 16.
+
+## Необязательная часть
+
+1. Реализуйте свой модуль для создания хостов в Yandex Cloud.
+2. Модуль может и должен иметь зависимость от `yc`, основной функционал: создание ВМ с нужным сайзингом на основе нужной ОС. Дополнительные модули по созданию кластеров ClickHouse, MySQL и прочего реализовывать не надо, достаточно простейшего создания ВМ.
+3. Модуль может формировать динамическое inventory, но эта часть не является обязательной, достаточно, чтобы он делал хосты с указанной спецификацией в YAML.
+4. Протестируйте модуль на идемпотентность, исполнимость. При успехе добавьте этот модуль в свою коллекцию.
+5. Измените playbook так, чтобы он умел создавать инфраструктуру под inventory, а после устанавливал весь ваш стек Observability на нужные хосты и настраивал его.
+6. В итоге ваша коллекция обязательно должна содержать: clickhouse-role (если есть своя), lighthouse-role, vector-role, два модуля: my_own_module и модуль управления Yandex Cloud хостами и playbook, который демонстрирует создание Observability стека.
+
+---
+
+### Как оформить решение задания
+
+Выполненное домашнее задание пришлите в виде ссылки на .md-файл в вашем репозитории.
+
+---
